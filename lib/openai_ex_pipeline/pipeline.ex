@@ -446,6 +446,26 @@ defmodule OpenaiExPipeline.Pipeline do
 
   defp build_api_options(api_options, _, _), do: api_options
 
+  @doc """
+  Cleans up resources by deleting vector stores, files, and responses.
+
+  ## Parameters
+    - token: The pipeline token containing resources to clean up
+      The token should contain:
+      - openai_client: The OpenAI client instance
+      - responses: List of responses to delete
+      - files: Map of files to delete
+      - vector_store: Vector store to delete
+
+  ## Returns
+    - The original token after cleanup operations
+    - Note: This function performs cleanup operations but does not modify the token's structure
+
+  ## Examples
+      iex> token = {:ok, %{openai_client: client, responses: [response], files: %{file1: file}, vector_store: store}}
+      iex> Pipeline.cleanup_resources(token)
+      {:ok, %{...}}
+  """
   def cleanup_resources(
         {_,
          %{
@@ -481,6 +501,26 @@ defmodule OpenaiExPipeline.Pipeline do
     end
   end
 
+  @doc """
+  Retrieves the output messages from the pipeline token.
+
+  ## Parameters
+    - token: The pipeline token containing resources
+
+  ## Returns
+    - `{:error, error}` if the token contains an error
+    - `{:ok, output_messages}` with the list of output messages on success
+
+  ## Examples
+      iex> token = {:ok, %{output_messages: ["message1", "message2"]}}
+      iex> Pipeline.get_output(token)
+      {:ok, ["message1", "message2"]}
+
+      iex> token = {:error, %{error: "Something went wrong"}}
+      iex> Pipeline.get_output(token)
+      {:error, "Something went wrong"}
+  """
+
   def get_output({:error, %{error: error}}) do
     {:error, error}
   end
@@ -512,6 +552,27 @@ defmodule OpenaiExPipeline.Pipeline do
     {init, last} = Enum.split(names, -1)
     Enum.join(init, ", ") <> ", and " <> "#{List.first(last)}"
   end
+
+  @doc """
+  Updates the data field in the pipeline resources.
+
+  ## Parameters
+    - token: The pipeline token containing resources
+    - data_to_update: Map of data to merge into the existing data field
+
+  ## Returns
+    - `{:error, error}` if the token contains an error
+    - `{:ok, updated_resources}` with the merged data on success
+
+  ## Examples
+      iex> token = {:ok, %{data: %{key1: "value1"}}}
+      iex> Pipeline.update_data(token, %{key2: "value2"})
+      {:ok, %{data: %{key1: "value1", key2: "value2"}}}
+
+      iex> token = {:error, %{error: "Something went wrong"}}
+      iex> Pipeline.update_data(token, %{key: "value"})
+      {:error, %{error: "Something went wrong"}}
+  """
 
   def update_data({:error, _} = error, _), do: error
 
@@ -604,6 +665,27 @@ defmodule OpenaiExPipeline.Pipeline do
 
   defp prune_output_messages(token, _, _output_message_index),
     do: token
+
+  @doc """
+  Merges two resource maps together, combining lists and preserving other values.
+
+  ## Parameters
+    - resources: The base resources map
+    - new_resources: The new resources map to merge with
+
+  ## Returns
+    A merged resources map where:
+    - :conversation lists are concatenated
+    - :output_messages lists are concatenated
+    - :responses lists are concatenated
+    - All other values are taken from the base resources map
+
+  ## Examples
+      iex> base = %{conversation: [1, 2], output_messages: ["a"], responses: [%{}], files: %{}}
+      iex> new = %{conversation: [3, 4], output_messages: ["b"], responses: [%{}], files: %{}}
+      iex> Pipeline.merge_resources(base, new)
+      %{conversation: [1, 2, 3, 4], output_messages: ["a", "b"], responses: [%{}, %{}], files: %{}}
+  """
 
   def merge_resources(resources, new_resources) do
     Map.merge(resources, new_resources, fn

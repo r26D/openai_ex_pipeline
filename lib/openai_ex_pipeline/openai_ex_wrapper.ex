@@ -266,6 +266,24 @@ defmodule OpenaiExPipeline.OpenaiExWrapper do
     |> OpenaiEx.with_receive_timeout(openai_client_timeout)
   end
 
+  @doc """
+  Cleans up files, from OpenAI's file storage.
+
+  ## Parameters
+    - openai_client: OpenAI client instance
+    - files: List or map of files to clean up
+      - If a list, can contain nested lists or file maps
+      - If a map, values should be file maps
+
+  ## Returns
+    - `{:ok}` on success
+    - `{:error, reason}` on failure
+
+  ## Examples
+      iex> files = [%{"id" => "file-123", "filename" => "test.txt"}]
+      iex> OpenaiExWrapper.clean_up_files(client, files)
+      {:ok}
+  """
   def clean_up_files(openai_client, files) when is_list(files) do
     Enum.each(files, fn file ->
       cond do
@@ -452,6 +470,15 @@ defmodule OpenaiExPipeline.OpenaiExWrapper do
   end
 
   defp default_sleep_fn(ms), do: Process.sleep(ms)
+  @doc """
+  Default sleep function for polling operations.
+
+  ## Parameters
+    - ms: Number of milliseconds to sleep
+
+  ## Returns
+    - `:ok` after sleeping for the specified duration
+  """
 
   def vector_store_poll_run_status(
         client,
