@@ -9,18 +9,32 @@ defmodule OpenaiExPipeline.OpenaiExWrapper do
 
   # Change back to 90
   @polling_timeout_in_seconds 10
+  @doc """
+  Checks if a string is blank (nil or empty after trimming).
+  Returns `true` if the string is nil or empty after trimming, `false` otherwise.
+  """
   def blank?(nil), do: true
   def blank?(str), do: String.trim(str) == ""
 
   @doc """
   Removes OpenAI citations from the content.
-  Returns {:ok, filtered_content} or {:error, reason}
+  Returns `{:ok, filtered_content}` or `{:error, reason}`
   """
   def filter_content(content) do
     filtered = Regex.replace(~r/【.*?】/, content, "")
     {:ok, filtered}
   end
 
+  @doc """
+  Lists all files from OpenAI's file storage.
+
+  ## Parameters
+    - client: OpenAI client
+
+  ## Returns
+    - `{:ok, files}` - List of files on success
+    - `{:error, reason}` - Error message on failure
+  """
   def list_files(client) do
     case OpenaiEx.Files.list(client) do
       {:ok, %{"data" => files}} ->
@@ -32,6 +46,16 @@ defmodule OpenaiExPipeline.OpenaiExWrapper do
     end
   end
 
+  @doc """
+  Lists all vector stores from OpenAI.
+
+  ## Parameters
+    - client: OpenAI client
+
+  ## Returns
+    - `{:ok, vector_stores}` - List of vector stores on success
+    - `{:error, reason}` - Error message on failure
+  """
   def list_vector_stores(client) do
     case Beta.VectorStores.list(client) do
       {:ok, %{"data" => vector_stores}} ->
@@ -53,8 +77,8 @@ defmodule OpenaiExPipeline.OpenaiExWrapper do
         to the specified vector store after upload
       - :aysnc_connection - if true, will not wait for the vector store connection to complete, defaults to false
   ## Returns
-    - {:ok, upload_response} on successful upload (and connection if vector_store_id provided)
-    - {:error, reason} if upload or vector store connection fails
+    - `{:ok, upload_response}` on successful upload (and connection if vector_store_id provided)
+    - `{:error, reason}` if upload or vector store connection fails
   """
 
   def upload_file(openai_client, file_path, options \\ %{async_connection: false}) do
@@ -271,8 +295,8 @@ defmodule OpenaiExPipeline.OpenaiExWrapper do
     - file: File map containing the file ID to delete
 
   ## Returns
-    - {:ok, response} on success
-    - {:error, reason} on failure
+    - `{:ok, response}` on success
+    - `{:error, reason}` on failure
   """
 
   def delete_file_from_file_storage(openai_client, %{"id" => file_id}),
@@ -293,6 +317,17 @@ defmodule OpenaiExPipeline.OpenaiExWrapper do
     end
   end
 
+  @doc """
+  Creates a new vector store with the given name.
+
+  ## Parameters
+    - openai_client: OpenAI client
+    - vector_store_name: Name of the vector store to create
+
+  ## Returns
+    - `{:ok, vector_store_res}` - Vector store response on success
+    - `{:error, reason}` - Error message on failure
+  """
   def create_vector_store(openai_client, vector_store_name) do
     case Beta.VectorStores.create(
            openai_client,
@@ -307,6 +342,17 @@ defmodule OpenaiExPipeline.OpenaiExWrapper do
     end
   end
 
+  @doc """
+  Deletes a vector store by ID.
+
+  ## Parameters
+    - openai_client: OpenAI client
+    - vector_store_id: ID of the vector store to delete (can be a map with "id" key or the ID string)
+
+  ## Returns
+    - `{:ok, "Vector store deleted"}` - Success message on successful deletion
+    - `{:error, reason}` - Error message on failure
+  """
   def delete_vector_store(openai_client, %{"id" => vector_store_id}) do
     delete_vector_store(openai_client, vector_store_id)
   end
@@ -326,6 +372,18 @@ defmodule OpenaiExPipeline.OpenaiExWrapper do
     end
   end
 
+  @doc """
+  Connects a file to a vector store.
+
+  ## Parameters
+    - openai_client: OpenAI client
+    - file_id: ID of the file to connect (can be a map with "id" key or the ID string)
+    - vector_store_id: ID of the vector store (can be a map with "id" key or the ID string)
+
+  ## Returns
+    - `{:ok, response}` - Response on successful connection
+    - `{:error, reason}` - Error message on failure
+  """
   def connect_file_to_vector_store(openai_client, %{"id" => file_id}, %{"id" => vector_store_id}) do
     connect_file_to_vector_store(openai_client, file_id, vector_store_id)
   end
@@ -349,6 +407,18 @@ defmodule OpenaiExPipeline.OpenaiExWrapper do
     end
   end
 
+  @doc """
+  Waits for a file to be processed in a vector store.
+
+  ## Parameters
+    - client: OpenAI client
+    - file_id: ID of the file (can be a map with "id" key or the ID string)
+    - vector_store_id: ID of the vector store (can be a map with "id" key or the ID string)
+
+  ## Returns
+    - `{:ok, vs_file}` - Vector store file on successful processing
+    - `{:error, reason}` - Error message on failure
+  """
   def wait_for_vector_store_file_connection(client, %{"id" => file_id}, %{"id" => vector_store_id}) do
     wait_for_vector_store_file_connection(client, file_id, vector_store_id)
   end
@@ -446,8 +516,8 @@ defmodule OpenaiExPipeline.OpenaiExWrapper do
     - vector_store_id: The ID of the vector store
 
   ## Returns
-    - {:ok, response} on success
-    - {:error, reason} on failure
+    - `{:ok, response}` on success
+    - `{:error, reason}` on failure
   """
 
   def check_status_on_vector_store_file_with_cache_buster(
@@ -469,6 +539,18 @@ defmodule OpenaiExPipeline.OpenaiExWrapper do
     })
   end
 
+  @doc """
+  Retrieves a file from a vector store.
+
+  ## Parameters
+    - client: OpenAI client
+    - file_id: ID of the file (can be a map with "id" key or the ID string)
+    - vector_store_id: ID of the vector store (can be a map with "id" key or the ID string)
+
+  ## Returns
+    - `{:ok, vs_file}` - Vector store file on success
+    - `{:error, reason}` - Error message on failure
+  """
   def get_file_from_vector_store(client, %{"id" => file_id}, %{"id" => vector_store_id}) do
     get_file_from_vector_store(client, file_id, vector_store_id)
   end
@@ -492,6 +574,15 @@ defmodule OpenaiExPipeline.OpenaiExWrapper do
     end
   end
 
+  @doc """
+  Extracts the message content from an OpenAI response.
+
+  ## Parameters
+    - response: OpenAI API response
+
+  ## Returns
+    - String containing the message content
+  """
   def get_message_from_response(response) do
     response
     |> get_output_message_from_response()
@@ -500,6 +591,18 @@ defmodule OpenaiExPipeline.OpenaiExWrapper do
     |> Map.get("text")
   end
 
+  @doc """
+  Creates a response using the OpenAI API.
+
+  ## Parameters
+    - openai_client: OpenAI client
+    - input: Input for the response
+    - params: Additional parameters (default: %{})
+
+  ## Returns
+    - `{:ok, response, conversation}` - Response and conversation on success
+    - `{:error, reason}` - Error message on failure
+  """
   def create_response(openai_client, input, params \\ %{}) do
     pretty_log_input(input)
 
@@ -523,6 +626,17 @@ defmodule OpenaiExPipeline.OpenaiExWrapper do
     Enum.find(output, &Map.has_key?(&1, "content"))
   end
 
+  @doc """
+  Deletes a response from OpenAI.
+
+  ## Parameters
+    - openai_client: OpenAI client
+    - response_id: ID of the response to delete (can be a map with "id" key or the ID string)
+
+  ## Returns
+    - `{:ok, "Response deleted"}` - Success message on successful deletion
+    - `{:error, reason}` - Error message on failure
+  """
   def delete_response(openai_client, %{"id" => response_id}) do
     delete_response(openai_client, response_id)
   end
@@ -542,6 +656,12 @@ defmodule OpenaiExPipeline.OpenaiExWrapper do
     end
   end
 
+  @doc """
+  Logs input messages in a formatted way.
+
+  ## Parameters
+    - input: List of input messages to log
+  """
   def pretty_log_input(input) do
     Enum.each(input, fn item ->
       # Print role in green if it exists

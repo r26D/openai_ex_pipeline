@@ -16,7 +16,6 @@ defmodule OpenaiExPipeline.MixProject do
       source_url: "https://github.com/r26d/openai_ex_pipeline",
       docs: docs(),
       preferred_cli_env: [
-        docs: :docs,
         "hex.publish": :docs,
         vcr: :test,
         "vcr.delete": :test,

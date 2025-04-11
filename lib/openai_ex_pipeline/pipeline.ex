@@ -5,6 +5,15 @@ defmodule OpenaiExPipeline.Pipeline do
   require Logger
   alias OpenaiExPipeline.OpenaiExWrapper
 
+  @doc """
+  Initializes the resources map with default values.
+
+  ## Parameters
+    - openai_client: The OpenAI client instance
+
+  ## Returns
+    A map containing initialized resources
+  """
   def init_resources(openai_client) do
     %{
       openai_client: openai_client,
@@ -18,12 +27,34 @@ defmodule OpenaiExPipeline.Pipeline do
     }
   end
 
+  @doc """
+  Removes an output message at the specified index.
+
+  ## Parameters
+    - token: The pipeline token containing resources
+    - index: The index of the output message to remove
+
+  ## Returns
+    - `{:error, token}` if the token is an error
+    - `{:ok, updated_resources}` with the output message removed
+  """
   def remove_output_messages({:error, _} = token, _index), do: token
 
   def remove_output_messages({:ok, %{output_messages: output_messages} = resources}, index) do
     {:ok, %{resources | output_messages: List.delete_at(output_messages, index)}}
   end
 
+  @doc """
+  Removes conversation entries at the specified index or range.
+
+  ## Parameters
+    - token: The pipeline token containing resources
+    - range_val: Either an index or a Range of indices to remove
+
+  ## Returns
+    - `{:error, token}` if the token is an error
+    - `{:ok, updated_resources}` with the conversation entries removed
+  """
   def remove_conversation({:error, _} = token, _index), do: token
 
   def remove_conversation({:ok, %{conversation: conversation} = resources}, range_val)
@@ -41,6 +72,17 @@ defmodule OpenaiExPipeline.Pipeline do
     {:ok, %{resources | conversation: List.delete_at(conversation, index)}}
   end
 
+  @doc """
+  Creates a vector store with the given name.
+
+  ## Parameters
+    - token: The pipeline token containing resources
+    - vector_store_name: The name for the new vector store
+
+  ## Returns
+    - `{:error, error}` if the token is an error or vector store already exists
+    - `{:ok, updated_resources}` with the new vector store
+  """
   @spec create_vector_store(
           {:error, any()}
           | {:ok, %{:openai_client => any(), :vector_store => any(), optional(any()) => any()}},
@@ -77,8 +119,8 @@ defmodule OpenaiExPipeline.Pipeline do
     - options: Map of options (defaults to %{async_connection: false})
 
   ## Returns
-    - {:ok, updated_resources} on success
-    - {:error, error_resources} on failure
+    - `{:ok, updated_resources}` on success
+    - `{:error, error_resources}` on failure
   """
   def upload_files(token, file_list, options \\ %{async_connection: false})
   def upload_files({:error} = token, _file_list, _options), do: token
@@ -124,6 +166,19 @@ defmodule OpenaiExPipeline.Pipeline do
     end
   end
 
+  @doc """
+  Uploads a file to the vector store.
+
+  ## Parameters
+    - token: The pipeline token containing resources
+    - file_label: The label for the file
+    - file_name: The path to the file
+    - options: Map of options (defaults to %{async_connection: false})
+
+  ## Returns
+    - `{:error, error}` if the token is an error or file doesn't exist
+    - `{:ok, updated_resources}` with the uploaded file
+  """
   def upload_file(
         token,
         file_label,
@@ -172,6 +227,20 @@ defmodule OpenaiExPipeline.Pipeline do
     end
   end
 
+  @doc """
+  Uploads an optional file to the vector store.
+
+  ## Parameters
+    - token: The pipeline token containing resources
+    - file_label: The label for the file
+    - file_name: The path to the file
+    - options: Map of options (defaults to %{async_connection: false})
+
+  ## Returns
+    - `{:error, error}` if the token is an error
+    - `{:ok, resources}` if the file is blank
+    - `{:ok, updated_resources}` with the uploaded file
+  """
   def upload_optional_file(
         token,
         file_label,
@@ -201,7 +270,18 @@ defmodule OpenaiExPipeline.Pipeline do
     end
   end
 
-  @spec upload_optional_files(any(), any()) :: {:error} | {:error, any()} | {:ok, any()}
+  @doc """
+  Uploads multiple optional files to the vector store.
+
+  ## Parameters
+    - token: The pipeline token containing resources
+    - incoming_files: List of file paths to upload
+    - options: Map of options (defaults to %{async_connection: false})
+
+  ## Returns
+    - `{:error, error}` if the token is an error
+    - `{:ok, updated_resources}` with the uploaded files
+  """
   def upload_optional_files(
         token,
         incoming_files,
@@ -230,6 +310,17 @@ defmodule OpenaiExPipeline.Pipeline do
     end)
   end
 
+  @doc """
+  Confirms that all files have been processed by the vector store.
+
+  ## Parameters
+    - token: The pipeline token containing resources
+
+  ## Returns
+    - `{:error, error}` if the token is an error
+    - `{:ok, resources}` if there are no files or no vector store
+    - `{:ok, updated_resources}` with processed files
+  """
   def confirm_vector_store_processing({:error, _} = error), do: error
 
   def confirm_vector_store_processing({:ok, %{vector_store: nil} = resources}),
@@ -274,6 +365,19 @@ defmodule OpenaiExPipeline.Pipeline do
     end)
   end
 
+  @doc """
+  Creates a response using the OpenAI API.
+
+  ## Parameters
+    - token: The pipeline token containing resources
+    - input: The input for the API call (function or list)
+    - api_options: Options for the API call
+    - options: Additional options (defaults to %{})
+
+  ## Returns
+    - `{:error, error}` if the token is an error or input is invalid
+    - `{:ok, updated_resources}` with the API response
+  """
   def create_response(_token, _input, _api_options, options \\ %{})
   def create_response({:error, _} = error, _, _, _), do: error
 
@@ -385,6 +489,15 @@ defmodule OpenaiExPipeline.Pipeline do
     {:ok, output_messages}
   end
 
+  @doc """
+  Joins a list of names using Oxford comma style.
+
+  ## Parameters
+    - names: List of names to join
+
+  ## Returns
+    A string with the names joined using Oxford comma style
+  """
   def oxford_join(names) do
     names
     |> Enum.reject(&(&1 in [nil, ""]))
@@ -425,10 +538,9 @@ defmodule OpenaiExPipeline.Pipeline do
       - :remove_from_output_messages? - If true, removes message from output_messages after upload (default: false)
 
   ## Returns
-    - {:ok, updated_resources} on successful upload
-    - {:error, reason} if upload fails or output_message_index is invalid
+    - `{:ok, updated_resources}` on successful upload
+    - `{:error, reason}` if upload fails or output_message_index is invalid
   """
-
   def upload_output_message_as_file(
         token,
         file_key,
