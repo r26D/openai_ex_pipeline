@@ -20,7 +20,7 @@
 # OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 # TODO consider merging these changes into the ExVCR library
-if Code.ensure_loaded?(Finch) do
+if Code.ensure_loaded?(Finch) and Code.ensure_loaded?(ExVCR) do
   defmodule OpenaiExPipeline.ExVCR.Adapter.Finch do
     @moduledoc """
     Provides adapter methods to mock Finch methods.
