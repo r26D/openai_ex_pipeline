@@ -78,8 +78,8 @@ defmodule OpenaiExPipeline.MixProject do
       {:ex_unit_notifier, "~> 1.3", only: :test},
       {:patch, "~> 0.15.0", only: [:test]},
       {:exvcr, "~> 0.17", only: :test},
-      {:excoveralls, "~> 0.18.5", only: :test},
-      {:ex_export, "~> 0.8.2"}
+      {:excoveralls, "~> 0.18.5", only: :test}
+      #  {:ex_export, "~> 0.8.2"}
     ]
   end
 

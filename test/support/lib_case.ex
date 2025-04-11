@@ -9,7 +9,7 @@ defmodule OpenaiExPipeline.Test.LibCase do
       use Patch
       import ExUnit.CaptureIO
       import ExUnit.CaptureLog
-      import OpenaiExPipeline.Test.Support.OpenaiMatchers
+      import OpenaiExPipeline.ExVCR.OpenaiMatchers
 
       def get_real_openai_client(openai_client_timeout \\ 120_000) do
         config = Application.fetch_env!(:openai_ex_pipeline, :openai)
