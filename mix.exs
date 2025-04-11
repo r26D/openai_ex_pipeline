@@ -16,7 +16,7 @@ defmodule OpenaiExPipeline.MixProject do
       source_url: "https://github.com/r26d/openai_ex_pipeline",
       docs: docs(),
       preferred_cli_env: [
-        "hex.publish": :docs,
+
         vcr: :test,
         "vcr.delete": :test,
         "vcr.check": :test,
@@ -89,7 +89,7 @@ defmodule OpenaiExPipeline.MixProject do
       tag:
         "cmd  git tag -a v#{version()} -m \\'Version #{version()}\\' ;git push origin v#{version()}",
       tags: "cmd git tag --list 'v*'",
-      publish: "cmd echo \$HEX_LOCAL_PASSWORD | mix hex.publish --yes",
+      publish: ["docs", "cmd echo \$HEX_LOCAL_PASSWORD | mix hex.publish --yes"],
       prettier: "format \"mix.exs\" \"{lib,test}/**/*.{ex,exs}\""
     ]
   end
