@@ -1,0 +1,8 @@
+{
+    "editor.formatOnSave": true,
+    "[elixir]": {
+        "editor.defaultFormatter": "JakeBecker.elixir-ls",
+        "editor.formatOnSave": true
+    },
+    "workbench.editor.wrapTabs": true
+}
