@@ -112,6 +112,43 @@ case result do
 end
 ```
 
+### Chat Completions (OpenAI GPT-4 / GPT-5)
+
+When using OpenAI Chat Completions with GPT-4 or GPT-5 (e.g. from estate when provider is
+OpenAI), use `OpenaiExPipeline.Chat.Completions` as the single entry point for "create".
+It normalizes the request before calling the API:
+
+- **max_output_tokens** → **max_completion_tokens** (Chat Completions API uses this name)
+- **max_input_tokens** is removed (not accepted by Chat Completions)
+- **stop** is removed for gpt-5 models (reasoning models do not support stop)
+
+Use `create/2` for non-streaming and `create/3` with `stream: true` for streaming. The
+`chat_request` map must use atom keys.
+
+```elixir
+alias OpenaiExPipeline.Chat.Completions
+alias OpenaiExPipeline.OpenaiExWrapper
+
+client = OpenaiExWrapper.get_openai_client(%{api_key: System.get_env("OPENAI_API_KEY")})
+
+request = %{
+  model: "gpt-5-mini",
+  messages: [%{role: "user", content: "Hello"}],
+  max_output_tokens: 1000
+}
+
+case Completions.create(client, request) do
+  {:ok, response} -> # use response
+  {:error, reason} -> # handle error
+end
+
+# Streaming
+case Completions.create(client, request, stream: true) do
+  {:ok, stream} -> # consume stream
+  {:error, reason} -> # handle error
+end
+```
+
 ### Error Handling and Cleanup
 
 ```elixir

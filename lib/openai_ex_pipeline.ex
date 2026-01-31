@@ -10,6 +10,12 @@ defmodule OpenaiExPipeline do
 
   It maintains all the core functionality of OpenaiEx while making it more natural to use
   in an Elixir application.
+
+  ## Chat Completions (GPT-4 / GPT-5)
+
+  Use `OpenaiExPipeline.Chat.Completions` as the single entry point for OpenAI Chat
+  Completions "create" (and streaming create). It normalizes requests for GPT-5 (e.g.
+  max_output_tokens → max_completion_tokens, no max_input_tokens, no stop for gpt-5).
   """
 
 
