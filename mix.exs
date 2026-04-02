@@ -70,8 +70,8 @@ defmodule OpenaiExPipeline.MixProject do
   # Run "mix help deps" to learn about dependencies.
   defp deps do
     [
-      {:openai_ex, git: "https://github.com/r26D/openai_ex.git", tag: "v0.9.18-gpt5"},
-      {:credo, "~> 1.7", only: [:dev, :test], runtime: false},
+      {:openai_ex, git: "https://github.com/r26D/openai_ex.git", tag: "v0.9.20-gpt5"},
+      {:credo, "~> 1.7.17", only: [:dev, :test], runtime: false},
       {:ex_doc, ">= 0.0.0", only: :dev, runtime: false},
       {:mix_test_watch, "~> 1.4", only: :dev, runtime: false},
       {:ex_unit_notifier, "~> 1.3", only: :test},
