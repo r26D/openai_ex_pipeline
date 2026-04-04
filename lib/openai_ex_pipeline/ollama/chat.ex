@@ -70,9 +70,11 @@ defmodule OpenaiExPipeline.Ollama.Chat do
   end
 
   defp build_native_request(request) do
+    messages = request |> Map.get(:messages, []) |> Enum.map(&normalize_message_for_native/1)
+
     body = %{
       "model" => Map.get(request, :model),
-      "messages" => Map.get(request, :messages, []),
+      "messages" => messages,
       "stream" => Map.get(request, :stream, false)
     }
 
@@ -170,4 +172,45 @@ defmodule OpenaiExPipeline.Ollama.Chat do
   defp encode_args(args) when is_binary(args), do: args
   defp encode_args(args) when is_map(args), do: Jason.encode!(args)
   defp encode_args(_), do: "{}"
+
+  # Normalize OpenAI-format messages to Ollama native format.
+  # Key difference: Ollama native API expects tool call arguments as objects,
+  # not JSON strings. Also strips fields the native API doesn't understand.
+  defp normalize_message_for_native(%{"role" => "assistant", "tool_calls" => tool_calls} = msg)
+       when is_list(tool_calls) and tool_calls != [] do
+    normalized_calls =
+      Enum.map(tool_calls, fn tc ->
+        func = Map.get(tc, "function", %{})
+        args = Map.get(func, "arguments", %{})
+
+        # Decode JSON string arguments to objects for native API
+        decoded_args = case args do
+          a when is_binary(a) ->
+            case Jason.decode(a) do
+              {:ok, parsed} -> parsed
+              {:error, _} -> %{}
+            end
+          a when is_map(a) -> a
+          _ -> %{}
+        end
+
+        %{"function" => %{"name" => Map.get(func, "name"), "arguments" => decoded_args}}
+      end)
+
+    %{
+      "role" => "assistant",
+      "content" => Map.get(msg, "content", ""),
+      "tool_calls" => normalized_calls
+    }
+  end
+
+  defp normalize_message_for_native(%{"role" => "tool"} = msg) do
+    # Ollama native accepts tool results as role:tool with content string
+    %{
+      "role" => "tool",
+      "content" => Map.get(msg, "content", "")
+    }
+  end
+
+  defp normalize_message_for_native(msg), do: msg
 end
