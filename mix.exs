@@ -71,6 +71,8 @@ defmodule OpenaiExPipeline.MixProject do
   defp deps do
     [
       {:openai_ex, git: "https://github.com/r26D/openai_ex.git", tag: "v0.9.20-gpt5"},
+      {:req, "~> 0.5"},
+      {:jason, "~> 1.4"},
       {:credo, "~> 1.7.17", only: [:dev, :test], runtime: false},
       {:ex_doc, ">= 0.0.0", only: :dev, runtime: false},
       {:mix_test_watch, "~> 1.4", only: :dev, runtime: false},
