@@ -645,9 +645,20 @@ defmodule OpenaiExPipeline.OpenaiExWrapper do
 
   defp build_conversation(reponse, input) do
     input
-    |> Enum.concat(List.wrap(get_output_message_from_response(reponse)))
+    |> Enum.concat(conversation_items_from_response(reponse))
     |> Enum.reject(&is_nil(&1))
   end
+
+  # Reasoning models reject a carried-forward assistant message item unless its
+  # preceding reasoning item is sent along with it, so keep both in order.
+  defp conversation_items_from_response(%{"output" => output}) when is_list(output) do
+    case Enum.filter(output, &(&1["type"] in ["reasoning", "message"])) do
+      [] -> List.wrap(Enum.find(output, &Map.has_key?(&1, "content")))
+      items -> items
+    end
+  end
+
+  defp conversation_items_from_response(_), do: []
 
   defp get_output_message_from_response(%{"output" => output}) do
     Enum.find(output, &(&1["type"] == "message")) ||
