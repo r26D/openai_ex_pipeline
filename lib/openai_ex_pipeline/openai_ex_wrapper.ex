@@ -650,7 +650,8 @@ defmodule OpenaiExPipeline.OpenaiExWrapper do
   end
 
   defp get_output_message_from_response(%{"output" => output}) do
-    Enum.find(output, &Map.has_key?(&1, "content"))
+    Enum.find(output, &(&1["type"] == "message")) ||
+      Enum.find(output, &Map.has_key?(&1, "content"))
   end
 
   @doc """
