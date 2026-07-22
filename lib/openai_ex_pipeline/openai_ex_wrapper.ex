@@ -8,7 +8,7 @@ defmodule OpenaiExPipeline.OpenaiExWrapper do
   @openai_client_timeout 90_000
 
   # Change back to 90
-  @polling_timeout_in_seconds 10
+  @polling_timeout_in_seconds 120
   @doc """
   Checks if a string is blank (nil or empty after trimming).
   Returns `true` if the string is nil or empty after trimming, `false` otherwise.
